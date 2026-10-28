@@ -34,8 +34,9 @@ const data = parsed.data;
 if (data.NODE_ENV === 'production') {
   const errors: string[] = [];
 
-  if (!process.env.MONGODB_URI || process.env.MONGODB_URI.includes('127.0.0.1')) {
-    errors.push('MONGODB_URI is required and must point to a production database cluster.');
+  const isLocalAllowed = process.env.ALLOW_LOCAL_DB === 'true';
+  if (!process.env.MONGODB_URI || (!isLocalAllowed && (process.env.MONGODB_URI.includes('127.0.0.1') || process.env.MONGODB_URI.includes('localhost')))) {
+    errors.push('MONGODB_URI is required and must point to a production database cluster (or set ALLOW_LOCAL_DB=true for single-host VM deployments).');
   }
 
   if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32 || process.env.JWT_SECRET === 'taskmanager_dev_super_secret_jwt_key_2026_secure') {
@@ -46,8 +47,8 @@ if (data.NODE_ENV === 'production') {
     errors.push('COOKIE_SECRET is required and must be a secure random string of at least 32 characters in production.');
   }
 
-  if (process.env.ADMIN_PASSWORD === 'Admin@123456') {
-    errors.push('ADMIN_PASSWORD must not use the predictable development default in production.');
+  if (process.env.ADMIN_PASSWORD === 'Admin@123456' && process.env.ALLOW_DEV_CREDENTIALS !== 'true') {
+    errors.push('ADMIN_PASSWORD must not use the predictable development default in production (set a strong unique password or ALLOW_DEV_CREDENTIALS=true for evaluation demos).');
   }
 
   if (errors.length > 0) {
