@@ -2,6 +2,9 @@
 
 A professional, role-based team task management web application built with **React**, **Express**, **TypeScript**, **MongoDB**, and **Tailwind CSS**.
 
+- **Live URL**: [https://cindy-released-applying-speak.trycloudflare.com](https://cindy-released-applying-speak.trycloudflare.com)
+- **GitHub Repository**: [https://github.com/Albert101255/team-task-manager](https://github.com/Albert101255/team-task-manager)
+
 Designed with a restrained, minimal, and information-focused interface (inspired by tools like Linear, Notion, and GitHub Projects) and backed by server-enforced role-based access control (RBAC), HttpOnly JWT sessions, and a comprehensive activity audit log.
 
 ---
