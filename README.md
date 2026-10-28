@@ -1,16 +1,19 @@
 # Team Task Manager
 
+**A full-stack, role-based task management application for teams.** Administrators assign and manage work; members see only their own assigned tasks and update their progress.
+
 A professional, role-based team task management web application built with **React**, **Express**, **TypeScript**, **MongoDB**, and **Tailwind CSS**.
 
 Designed with a restrained, minimal, and information-focused interface (inspired by tools like Linear, Notion, and GitHub Projects) and backed by server-enforced role-based access control (RBAC), HttpOnly JWT sessions, and a comprehensive activity audit log.
 
 ---
 
-## Live Demo
+## Demo and Source
 
-- **Temporary Demonstration Tunnel**: [https://cindy-released-applying-speak.trycloudflare.com](https://cindy-released-applying-speak.trycloudflare.com)  
-  *(Note: This is a temporary demonstration tunnel; availability is subject to active local tunnel sessions).*
-- **GitHub Repository**: [https://github.com/Albert101255/team-task-manager](https://github.com/Albert101255/team-task-manager)
+- **Source code:** [GitHub repository](https://github.com/Albert101255/team-task-manager)
+- **Temporary preview (may be offline):** [Cloudflare demo tunnel](https://cindy-released-applying-speak.trycloudflare.com). This link only works while the local server and tunnel are running; it is **not** a permanent deployment.
+
+**Evaluation note:** Features and security controls described below reflect the repository implementation. Deployment availability and automated test results should be verified in the target environment.
 
 ---
 
@@ -23,6 +26,17 @@ Designed with a restrained, minimal, and information-focused interface (inspired
 | **Database** | MongoDB (MongoDB Atlas in production / Docker / Local MongoDB) |
 | **Testing** | Vitest, Supertest, MongoMemoryServer (100% database isolation) |
 | **Deployment** | Single-origin Node.js web service (Render / Docker / VPS) |
+
+---
+
+## How it works
+
+1. An administrator signs in, creates a task, sets its priority and deadline, and assigns it to a member.
+2. The member signs in and views their own tasks under **My Tasks**, without access to other members' assignments.
+3. The member updates the task status as work progresses.
+4. The administrator monitors team progress, deadlines, and an activity history of changes.
+
+Role restrictions are checked on the server, not just by hiding controls in the interface.
 
 ---
 
@@ -229,19 +243,19 @@ The automated test suite uses `mongodb-memory-server` to run in a 100% isolated,
 ```bash
 npm test
 ```
-**Results**: `17/17 passed` across authentication, authorization, role isolation, task lifecycle, deletion, and pagination regressions.
+**Previously reported result:** `17/17 passed` across authentication, authorization, role isolation, task lifecycle, deletion, and pagination regressions. Run the command above to verify against the current revision.
 
 ### Type Checking
 ```bash
 npm run typecheck
 ```
-**Results**: Zero TypeScript compiler errors across client and server workspaces.
+**Verification:** Run the command above to check client and server TypeScript compilation on the current revision.
 
 ### Live Integration Scenario Script
 ```bash
 npx tsx tests/liveVerification.ts
 ```
-**Results**: 10/10 end-to-end integration checks passed against live server.
+**Previously reported result:** 10/10 integration checks passed. This script requires a running application; repeat it to confirm the current environment.
 
 ---
 
@@ -279,7 +293,22 @@ The repository includes a ready-to-use `render.yaml` configuration:
 
 ---
 
+## Troubleshooting
+
+- **MongoDB connection fails:** Ensure MongoDB is running, or provide a working Atlas connection string in `MONGODB_URI`.
+- **Login/session fails:** Check that the frontend is calling the intended API origin and that cookie settings match HTTP/HTTPS and hosting configuration.
+- **Environment validation fails:** Replace placeholder secrets with strong, unique values; do not commit your `.env` file.
+- **Temporary demo link is unavailable:** Run the application locally or deploy it to a persistent host. Cloudflare quick tunnels expire when their session ends.
+
+---
+
 ## Known Limitations
 
 - **Email Notifications**: Currently notification bells and external email delivery for assignments are not integrated; activity audit history is tracked in-app via database records.
 - **Task Comments**: Task detail views currently include activity audit history; rich threaded commenting is planned for future iterations.
+
+---
+
+## Project Scope
+
+Built as a team-oriented web development project demonstrating React interfaces, Express REST APIs, MongoDB persistence, authentication, role-based authorization, and task lifecycle management. The repository is intended for technical evaluation and continued development; production deployment requires environment-specific verification.
