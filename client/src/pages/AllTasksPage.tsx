@@ -18,11 +18,12 @@ export const AllTasksPage: React.FC = () => {
   const priority = searchParams.get('priority') || '';
   const assignedTo = searchParams.get('assignedTo') || '';
   const search = searchParams.get('search') || '';
-  const page = parseInt(searchParams.get('page') || '1', 10);
+  const rawPage = parseInt(searchParams.get('page') || '1', 10);
+  const page = isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
 
   const [taskToDelete, setTaskToDelete] = useState<{ id: string; title: string } | null>(null);
 
-  // Update query params helper
+  // Update query params helper: resets page to 1 when changing filters
   const updateFilter = (key: string, value: string) => {
     const newParams = new URLSearchParams(searchParams);
     if (value) {
@@ -30,7 +31,15 @@ export const AllTasksPage: React.FC = () => {
     } else {
       newParams.delete(key);
     }
-    newParams.set('page', '1'); // Reset to page 1 on filter change
+    newParams.set('page', '1');
+    setSearchParams(newParams);
+  };
+
+  // Dedicated page change handler that advances or retreats page WITHOUT resetting to 1
+  const changePage = (newPage: number) => {
+    if (isNaN(newPage) || newPage < 1) return;
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('page', newPage.toString());
     setSearchParams(newParams);
   };
 
@@ -198,15 +207,17 @@ export const AllTasksPage: React.FC = () => {
             <div className="flex items-center gap-2">
               <button
                 disabled={pagination.page <= 1}
-                onClick={() => updateFilter('page', (pagination.page - 1).toString())}
+                onClick={() => changePage(pagination.page - 1)}
                 className="p-1.5 rounded border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:pointer-events-none"
+                aria-label="Previous Page"
               >
                 <ArrowLeft className="w-4 h-4" />
               </button>
               <button
                 disabled={pagination.page >= pagination.totalPages}
-                onClick={() => updateFilter('page', (pagination.page + 1).toString())}
+                onClick={() => changePage(pagination.page + 1)}
                 className="p-1.5 rounded border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:pointer-events-none"
+                aria-label="Next Page"
               >
                 <ArrowRight className="w-4 h-4" />
               </button>

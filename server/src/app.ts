@@ -13,6 +13,7 @@ import activityRoutes from './routes/activityRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { env } from './config/env.js';
+import { AUTH_COOKIE_NAME } from './utils/jwt.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,15 +21,25 @@ const __dirname = path.dirname(__filename);
 export function createApp() {
   const app = express();
 
-  // Security Middleware
+  // Content Security Policy & Security Headers via Helmet
   app.use(
     helmet({
-      contentSecurityPolicy: false, // Allows Vite scripts and fonts in single-origin deployment
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'"],
+          styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+          fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+          imgSrc: ["'self'", 'data:'],
+          connectSrc: ["'self'"],
+          objectSrc: ["'none'"],
+        },
+      },
       crossOriginEmbedderPolicy: false,
     })
   );
 
-  // CORS Middleware
+  // CORS Middleware: strictly restricted in production
   app.use(
     cors({
       origin: env.NODE_ENV === 'production' ? false : ['http://localhost:3000', 'http://127.0.0.1:3000'],
@@ -40,6 +51,57 @@ export function createApp() {
   app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: true, limit: '1mb' }));
   app.use(cookieParser(env.COOKIE_SECRET));
+
+  // CSRF / Origin Verification for Cookie-Authenticated State-Changing Requests
+  app.use((req, res, next) => {
+    const isStateChanging = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method);
+    if (!isStateChanging || !req.cookies?.[AUTH_COOKIE_NAME]) {
+      return next();
+    }
+
+    // Bypass during isolated automated testing or when using Authorization header
+    if (env.NODE_ENV === 'test' || req.headers.authorization?.startsWith('Bearer ')) {
+      return next();
+    }
+
+    const originHeader =
+      req.headers.origin ||
+      (req.headers.referer ? new URL(req.headers.referer).origin : null);
+
+    if (!originHeader) {
+      res.status(403).json({
+        success: false,
+        error: {
+          code: 'FORBIDDEN',
+          message: 'State-changing request blocked: missing Origin or Referer header.',
+        },
+      });
+      return;
+    }
+
+    const host = req.get('host');
+    const isDirectHost = host ? originHeader.includes(host) : false;
+    const isLocalDev =
+      env.NODE_ENV !== 'production' &&
+      (originHeader.includes('localhost') || originHeader.includes('127.0.0.1'));
+    const isAllowedTunnel =
+      originHeader.includes('trycloudflare.com') ||
+      originHeader.includes('loca.lt') ||
+      originHeader.includes('onrender.com');
+
+    if (!isDirectHost && !isLocalDev && !isAllowedTunnel) {
+      res.status(403).json({
+        success: false,
+        error: {
+          code: 'FORBIDDEN',
+          message: 'Cross-origin request blocked by CSRF origin verification.',
+        },
+      });
+      return;
+    }
+
+    next();
+  });
 
   // Health Endpoint
   app.get('/api/health', (_req, res) => {

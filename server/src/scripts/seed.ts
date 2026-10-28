@@ -1,26 +1,41 @@
 import bcrypt from 'bcryptjs';
 import { connectDB, disconnectDB } from '../config/db.js';
+import { env } from '../config/env.js';
 import { User } from '../models/User.js';
 import { Task } from '../models/Task.js';
 import { ActivityLog } from '../models/ActivityLog.js';
 
 async function seed() {
   try {
-    await connectDB();
-    console.log('[Seed] Connected to database. Seeding development data...');
+    // Safety verification: strictly refuse to seed in production or on remote clusters
+    if (env.NODE_ENV === 'production') {
+      console.error('[Security Error] Development seeding is strictly forbidden in production.');
+      process.exit(1);
+    }
 
-    // Clear existing data in dev
+    if (env.MONGODB_URI.includes('mongodb.net') && !process.env.ALLOW_REMOTE_SEED) {
+      console.error('[Security Error] Detected remote MongoDB cluster URI. Seeding aborted to protect live data.');
+      process.exit(1);
+    }
+
+    await connectDB();
+    console.log('[Seed] Connected to database. Seeding development demo dataset...');
+
+    // Clear existing data only in verified local development environment
     await Promise.all([
       User.deleteMany({}),
       Task.deleteMany({}),
       ActivityLog.deleteMany({}),
     ]);
 
-    const salt = await bcrypt.genSalt(10);
-    const adminPasswordHash = await bcrypt.hash('Admin@123456', salt);
-    const memberPasswordHash = await bcrypt.hash('Member@123456', salt);
+    const adminPassword = process.env.SEED_ADMIN_PASSWORD || 'Admin@123456';
+    const memberPassword = process.env.SEED_MEMBER_PASSWORD || 'Member@123456';
 
-    // 1 Admin
+    const salt = await bcrypt.genSalt(10);
+    const adminPasswordHash = await bcrypt.hash(adminPassword, salt);
+    const memberPasswordHash = await bcrypt.hash(memberPassword, salt);
+
+    // 1 Administrator
     const admin = await User.create({
       name: 'System Administrator',
       email: 'admin@teamtasks.io',
@@ -43,10 +58,10 @@ async function seed() {
       role: 'member',
     });
 
-    console.log('[Seed] Created users:');
-    console.log(`  Admin:  ${admin.email} / Admin@123456`);
-    console.log(`  Member: ${memberAlex.email} / Member@123456`);
-    console.log(`  Member: ${memberSam.email} / Member@123456`);
+    console.log('[Seed] Created accounts:');
+    console.log(`  - Administrator: ${admin.email}`);
+    console.log(`  - Member 1:      ${memberAlex.email}`);
+    console.log(`  - Member 2:      ${memberSam.email}`);
 
     const now = new Date();
     const inTwoDays = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
@@ -192,11 +207,11 @@ async function seed() {
       },
     ]);
 
-    console.log('[Seed] Database seeded with 5 tasks and 13 activity records.');
+    console.log('[Seed] Database seeded with 5 demo tasks and 13 activity records.');
     await disconnectDB();
     process.exit(0);
-  } catch (error) {
-    console.error('[Seed] Failed to seed database:', error);
+  } catch (error: any) {
+    console.error('[Seed Error] Failed to seed database:', error.message || error);
     process.exit(1);
   }
 }

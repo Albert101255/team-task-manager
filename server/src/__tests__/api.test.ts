@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import request from 'supertest';
-import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import { MongoMemoryServer } from 'mongodb-memory-server';
 import { createApp } from '../app.js';
 import { connectDB, disconnectDB } from '../config/db.js';
 import { User } from '../models/User.js';
@@ -11,6 +11,7 @@ import { AUTH_COOKIE_NAME } from '../utils/jwt.js';
 
 const app = createApp();
 
+let mongoServer: MongoMemoryServer;
 let adminUser: any;
 let memberA: any;
 let memberB: any;
@@ -18,16 +19,23 @@ let adminCookie: string;
 let memberACookie: string;
 let memberBCookie: string;
 
-describe('Role-Based Team Task Manager API Test Suite', () => {
+describe('Role-Based Team Task Manager API Test Suite (Isolated In-Memory)', () => {
   beforeAll(async () => {
-    await connectDB();
+    // Spin up an isolated in-memory MongoDB instance for 100% test isolation
+    mongoServer = await MongoMemoryServer.create();
+    const uri = mongoServer.getUri();
+    await connectDB(uri);
   });
 
   afterAll(async () => {
     await disconnectDB();
+    if (mongoServer) {
+      await mongoServer.stop();
+    }
   });
 
   beforeEach(async () => {
+    // Safe: only runs on isolated in-memory test instance
     await User.deleteMany({});
     await Task.deleteMany({});
     await ActivityLog.deleteMany({});
@@ -170,7 +178,7 @@ describe('Role-Based Team Task Manager API Test Suite', () => {
 
     it('member A views own tasks and does not see member B tasks in /my-tasks', async () => {
       // Create Task for Alice
-      const taskAlice = await Task.create({
+      await Task.create({
         title: 'Alice Task',
         assignedTo: memberA._id,
         createdBy: adminUser._id,
@@ -245,7 +253,7 @@ describe('Role-Based Team Task Manager API Test Suite', () => {
 
       // Verify activity log
       const log = await ActivityLog.findOne({
-        taskId: aliceTask._id,
+        taskId: aliceTask._id.toString(),
         action: 'STATUS_CHANGED',
       });
       expect(log).toBeDefined();
@@ -380,6 +388,47 @@ describe('Role-Based Team Task Manager API Test Suite', () => {
       expect(aliceStats.status).toBe(200);
       expect(aliceStats.body.data.stats.totalTasks).toBe(1);
       expect(aliceStats.body.data.stats.overdueTasks).toBe(1);
+    });
+  });
+
+  describe('Regression Tests: Pagination & Query Handling', () => {
+    it('paginates tasks correctly when requesting page 2', async () => {
+      // Create 12 tasks
+      const tasksToCreate = Array.from({ length: 12 }, (_, i) => ({
+        title: `Paginated Task ${i + 1}`,
+        assignedTo: memberA._id,
+        createdBy: adminUser._id,
+        status: 'todo',
+        priority: 'low',
+        dueDate: new Date(Date.now() + 86400000 * (i + 1)),
+      }));
+      await Task.insertMany(tasksToCreate);
+
+      // Request Page 1 with limit 5
+      const page1Res = await request(app)
+        .get('/api/tasks?page=1&limit=5')
+        .set('Cookie', adminCookie);
+
+      expect(page1Res.status).toBe(200);
+      expect(page1Res.body.data.tasks.length).toBe(5);
+      expect(page1Res.body.data.pagination.page).toBe(1);
+      expect(page1Res.body.data.pagination.totalPages).toBe(3);
+      expect(page1Res.body.data.pagination.total).toBe(12);
+
+      // Request Page 2 with limit 5
+      const page2Res = await request(app)
+        .get('/api/tasks?page=2&limit=5')
+        .set('Cookie', adminCookie);
+
+      expect(page2Res.status).toBe(200);
+      expect(page2Res.body.data.tasks.length).toBe(5);
+      expect(page2Res.body.data.pagination.page).toBe(2);
+
+      // Verify page 1 and page 2 have distinct items
+      const page1Ids = page1Res.body.data.tasks.map((t: any) => t._id);
+      const page2Ids = page2Res.body.data.tasks.map((t: any) => t._id);
+      const intersection = page1Ids.filter((id: string) => page2Ids.includes(id));
+      expect(intersection.length).toBe(0);
     });
   });
 });
