@@ -23,10 +23,13 @@ export function verifyToken(token: string): TokenPayload {
 
 export function getCookieOptions(): CookieOptions {
   const isProduction = env.NODE_ENV === 'production';
+  const isSecure = process.env.COOKIE_SECURE !== undefined
+    ? process.env.COOKIE_SECURE === 'true'
+    : isProduction;
   return {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? 'strict' : 'lax',
+    secure: isSecure,
+    sameSite: isSecure ? 'strict' : 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     path: '/',
   };
@@ -38,10 +41,13 @@ export function setAuthCookie(res: Response, token: string): void {
 
 export function clearAuthCookie(res: Response): void {
   const isProduction = env.NODE_ENV === 'production';
+  const isSecure = process.env.COOKIE_SECURE !== undefined
+    ? process.env.COOKIE_SECURE === 'true'
+    : isProduction;
   res.clearCookie(AUTH_COOKIE_NAME, {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? 'strict' : 'lax',
+    secure: isSecure,
+    sameSite: isSecure ? 'strict' : 'lax',
     path: '/',
   });
 }

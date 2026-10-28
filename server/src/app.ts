@@ -36,8 +36,10 @@ export function createApp() {
           imgSrc: ["'self'", 'data:'],
           connectSrc: ["'self'"],
           objectSrc: ["'none'"],
+          upgradeInsecureRequests: process.env.ENABLE_HSTS === 'true' ? [] : null,
         },
       },
+      hsts: process.env.ENABLE_HSTS === 'true',
       crossOriginEmbedderPolicy: false,
     })
   );
