@@ -25,14 +25,14 @@ describe('Role-Based Team Task Manager API Test Suite (Isolated In-Memory)', () 
     mongoServer = await MongoMemoryServer.create();
     const uri = mongoServer.getUri();
     await connectDB(uri);
-  });
+  }, 60000);
 
   afterAll(async () => {
     await disconnectDB();
     if (mongoServer) {
       await mongoServer.stop();
     }
-  });
+  }, 30000);
 
   beforeEach(async () => {
     // Safe: only runs on isolated in-memory test instance
