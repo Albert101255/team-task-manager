@@ -10,9 +10,9 @@ Designed with a restrained, minimal, and information-focused interface (inspired
 
 ## Demo and Source
 
-- **Live Preview URL:** https://optimum-economy-big-alarm.trycloudflare.com
+- **Permanent AWS Deployment:** [http://54.196.200.240](http://54.196.200.240) (AWS EC2 `t3.micro`, Region: `us-east-1`)
+- **Live Preview Tunnel:** [https://optimum-economy-big-alarm.trycloudflare.com](https://optimum-economy-big-alarm.trycloudflare.com)
 - **Source code:** [GitHub repository](https://github.com/Albert101255/team-task-manager)
-- **Temporary preview note:** The live preview runs via Cloudflare tunnel connected to the active demonstration server.
 
 **Evaluation note:** Features and security controls described below reflect the repository implementation. Deployment availability and automated test results should be verified in the target environment.
 
