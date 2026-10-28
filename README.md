@@ -26,6 +26,20 @@ Designed with a restrained, minimal, and information-focused interface (inspired
 
 ---
 
+## Demo & Testing Credentials
+
+For demonstration, local evaluation, and test reviews (populated when running `npm run seed`):
+
+| Account | Email | Password | Role & Scope |
+|---|---|---|---|
+| **Administrator** | `admin@teamtasks.io` | `Admin@123456` | **Full Admin**: Overview stats, all tasks board, create/edit/delete/reassign, member directory, full audit trail. |
+| **Team Member 1** (Alex Rivera) | `alex@teamtasks.io` | `Member@123456` | **Member**: Assigned workload only (`/my-tasks`), permitted status updater (`To Do` &rarr; `In Progress` &rarr; `Completed`). |
+| **Team Member 2** (Sam Taylor) | `sam@teamtasks.io` | `Member@123456` | **Member**: Assigned workload only (`/my-tasks`), permitted status updater. |
+
+> *Self-Service Registration*: You can also create a new member account at any time via `/register` (which strictly assigns the `member` role). In production deployments, set custom high-entropy credentials via environment variables for `npm run bootstrap:admin`.*
+
+---
+
 ## Technology Stack
 
 | Layer | Technologies |
