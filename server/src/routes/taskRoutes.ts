@@ -17,6 +17,7 @@ const router = Router();
 router.use(requireAuth);
 
 router.get('/my', getMyTasks);
+router.get('/my-tasks', getMyTasks);
 router.get('/', requireRole('admin'), getAllTasks);
 router.post('/', requireRole('admin'), createTask);
 

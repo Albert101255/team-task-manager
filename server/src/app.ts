@@ -21,6 +21,9 @@ const __dirname = path.dirname(__filename);
 export function createApp() {
   const app = express();
 
+  // Trust proxy for reverse proxies / Cloudflare tunnels / Render
+  app.set('trust proxy', 1);
+
   // Content Security Policy & Security Headers via Helmet
   app.use(
     helmet({
