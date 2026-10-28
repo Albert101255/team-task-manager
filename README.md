@@ -11,7 +11,7 @@ Designed with a restrained, minimal, and information-focused interface (inspired
 ## Demo and Source
 
 - **Source code:** [GitHub repository](https://github.com/Albert101255/team-task-manager)
-- **Temporary preview (may be offline):** [Cloudflare demo tunnel](https://cindy-released-applying-speak.trycloudflare.com). This link only works while the local server and tunnel are running; it is **not** a permanent deployment.
+- **Temporary preview (may be offline):** [Cloudflare demo tunnel](https://optimum-economy-big-alarm.trycloudflare.com). This link only works while the local server and tunnel are running; it is **not** a permanent deployment.
 
 **Evaluation note:** Features and security controls described below reflect the repository implementation. Deployment availability and automated test results should be verified in the target environment.
 
