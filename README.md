@@ -17,6 +17,15 @@ Designed with a restrained, minimal, and information-focused interface (inspired
 
 ---
 
+## Demo Administrator Access
+
+- **Email:** `admin@teamtasks.io`
+- **Password:** Not published in this public repository. Obtain it privately from the project owner, or configure your own administrator account with `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `npm run bootstrap:admin`.
+
+> For a public demo, use a dedicated, resettable account with restricted data. Never reuse production administrator credentials.
+
+---
+
 ## Technology Stack
 
 | Layer | Technologies |
