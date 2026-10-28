@@ -10,7 +10,7 @@ Designed with a restrained, minimal, and information-focused interface (inspired
 
 ## Demo and Source
 
-- **Permanent AWS Deployment:** [http://54.196.200.240](http://54.196.200.240) (AWS EC2 `t3.micro`, Region: `us-east-1`)
+- **Permanent AWS Deployment (HTTPS SSL):** [https://54-196-200-240.sslip.io](https://54-196-200-240.sslip.io) (AWS EC2 `t3.micro`, Region: `us-east-1`, Let's Encrypt TLS)
 - **Live Preview Tunnel:** [https://optimum-economy-big-alarm.trycloudflare.com](https://optimum-economy-big-alarm.trycloudflare.com)
 - **Source code:** [GitHub repository](https://github.com/Albert101255/team-task-manager)
 
